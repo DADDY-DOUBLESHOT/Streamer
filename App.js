@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Component } from "react";
 import { View,Text,StyleSheet,TouchableOpacity,Button, Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
@@ -6,105 +6,110 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import LottieView from "lottie-react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { Video, AVPlaybackStatus } from 'expo-av';
-import { useEffect } from "react";
+import { useState } from "react";
+import { updateId } from "expo-updates";
 
 
-class Home extends Component
+
+function Home()
 {
-    constructor()
-    {
-        super();
-        this.state=
+        const [status,setStatus]=useState({});
+        const [filepath,setPath]=useState(null);
+        const [width,setWidth]=useState(0);
+        const [height,setHeight]=useState(0);
+        const [isSelected,setSelect]=useState(false);
+        const [filename,setName]=useState({});
+        const video = React.useRef(null);
+       
+        async function VideoSelector()
         {
-           fileselected:false,
-           filepath:null,
-           filewidth:null,
-           fileheight:null,
+          let result=await ImagePicker.launchImageLibraryAsync(
+              {
+                    mediaTypes:ImagePicker.MediaTypeOptions.Videos,
+                    aspect:[4,2],
+                    quality:1,
+              }
+          );
 
+        
+            if(!result.cancelled)
+            {
+                setPath(result.uri);
+                setWidth(result.width);
+                setHeight(result.height);
+                setName(result.uri.substring(result.uri.lastIndexOf('/')+1,result.uri.length));
+            }
+            setSelect(true);
+         
+        
         }
-    }
-   
-    render()
-    {
-        if(this.state.fileselected)
+        function Screen1()
         {
-            return (
-                <View>
-            <Text>
-                Testing
-            </Text>
-        </View>
-            );
-           
-        }
-        else{
-            return (
+            return(
                 <View style={{flex:1}}>
-                    <Text style={{flex:1,alignSelf:"center",color:"grey",fontSize:18,margin:10}} >Select a Video File to Stream</Text>
+                    <View style={{flex:1,justifyContent:"center",margin:20}}>
+                        <Text style={{fontSize:17,color:"grey",opacity:0.7,alignSelf:"center"}}>
+                            Select a Video File to Stream
+                        </Text>
+                    </View>
+                    <View style={{flex:2,margin:30}}>
+                        <TouchableOpacity style={{flex:1}} onPress={()=>{VideoSelector()}}>
+                            <LottieView style={{flex:1,marginBottom:50}} source={require('./assets/animated/bg/file3.json')} autoPlay/>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity onPress={()=>{openImagePicker()}}>
-                    <LottieView style={{alignSelf:"center" ,width:"80%",height:"80%"}}source={require('./assets/animated/bg/file3.json')} autoPlay />
-                    </TouchableOpacity> 
-                 </View>
+                    </View>
+                    
+                </View>
             );
         }
-    }
+        function Screen2()
+        {
+          
+            return (
+                <View style={{flex:1,justifyContent:"center" 
+                }}>
+                    <View style={{flex:1,justifyContent:"space-around"}}>
+                        <Video
+                        style={{flex:1,justifyContent:"center"}}
+                        ref={video}
+                        source={{uri:filepath}}
+                        useNativeControls
+                        resizeMode="contain"
+                        isLooping
+                        onPlaybackStatusUpdate={status => setStatus(() => status)}
+                        />
+                    </View>
+                    <View style={{flex:1}}>
+                       
+                    </View>
+                </View>
+            );
+        }
+        
+        if(isSelected)
+        {
+            return Screen2();
+        }
+        else
+        {
+            return Screen1();
+        }
+         
 }
 
-class Current_Stream extends Component
+function Current_Stream()
 {
-    render()
-    {
+   
         return(
             <View>
                 <Text style={{fontSize:50}}>
                   Currently Streaming
                 </Text>
             </View>
-        );
-    }
+        )
+    
 }
 
-function watchPermissions()
-{
-    (async () => {
-        if (Platform.OS !== 'web') {
-          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-          if (status !== 'granted') {
-            alert('Sorry, we need camera roll permissions to make this work!');
-          }
-        }
-    })
-}
-
-const openImagePicker=async()=>
-{
-   
-            const result= await ImagePicker.launchImageLibraryAsync(
-                {
-                    mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-                    allowsEditing: true,
-                    aspect: [4, 3],
-                    quality: 1,
-                }
-            )
-        
-           if(!result.cancelled)
-           {
-               return this.state={
-                    filepath:result.uri,
-                    fileheight:result.height,
-                    filewidth:result.width,
-                    fileselected:true,
-               }
-           }
-     
-    
-    return Promise.resolve(undefined);
-    
-   
-  
-}
 
 
 
