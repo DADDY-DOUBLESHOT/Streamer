@@ -7,7 +7,9 @@ import LottieView from "lottie-react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { Video, AVPlaybackStatus } from 'expo-av';
 import { useState } from "react";
-import { updateId } from "expo-updates";
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from "expo-status-bar";
+
 
 
 
@@ -20,6 +22,10 @@ function Home()
         const [isSelected,setSelect]=useState(false);
         const [filename,setName]=useState({});
         const video = React.useRef(null);
+        const play=React.useRef(null);
+        const [playIcon,setPlay]=useState(require('./assets/animated/icons/play1.json'));
+        const [stopped,setStop]=useState(true);
+        const [isStream,Stream]=useState(false);
        
         async function VideoSelector()
         {
@@ -38,15 +44,39 @@ function Home()
                 setWidth(result.width);
                 setHeight(result.height);
                 setName(result.uri.substring(result.uri.lastIndexOf('/')+1,result.uri.length));
+                setSelect(true);
             }
-            setSelect(true);
+            else
+            {
+                setSelect(false);
+            }
+           
          
         
+        }
+        
+        function toggleVideo()
+        {
+            if(stopped)
+            {
+                play.current.play();
+                video.current.playAsync();
+                play.current.play(125,160)
+            }
+            else
+            {
+                play.current.reset();
+                video.current.pauseAsync();
+            }
+            
+            
+            setStop(!stopped);   
         }
         function Screen1()
         {
             return(
                 <View style={{flex:1}}>
+                    <StatusBar hidden/>
                     <View style={{flex:1,justifyContent:"center",margin:20}}>
                         <Text style={{fontSize:17,color:"grey",opacity:0.7,alignSelf:"center"}}>
                             Select a Video File to Stream
@@ -58,6 +88,7 @@ function Home()
                         </TouchableOpacity>
 
                     </View>
+                   
                     
                 </View>
             );
@@ -66,11 +97,11 @@ function Home()
         {
           
             return (
-                <View style={{flex:1,justifyContent:"center" 
-                }}>
-                    <View style={{flex:1,justifyContent:"space-around"}}>
+                <View style={{flex:1,justifyContent:"center"}}>
+                    <LinearGradient style={{flex:1}} colors={["#f96153","#f96153"]} start={{x: 0, y: 0}} end={{x: 0, y: 0}} >
+                    <View style={{flex:1,justifyContent:"center",overflow:"hidden",margin:20}}>
                         <Video
-                        style={{flex:1,justifyContent:"center"}}
+                        style={{flex:1,width:"90%",alignSelf:"center",borderRadius:30,overflow:"hidden"}}
                         ref={video}
                         source={{uri:filepath}}
                         useNativeControls
@@ -79,9 +110,15 @@ function Home()
                         onPlaybackStatusUpdate={status => setStatus(() => status)}
                         />
                     </View>
-                    <View style={{flex:1}}>
+                    <View style={{flex:0.8,backgroundColor:"#1a1a1a",borderRadius:30,display:"flex",flexDirection:"row",justifyContent:"space-around"}}>
+                        <TouchableOpacity style={{flex:1,justifyContent:"space-evenly",flexDirection:"row"}} onPress={()=>{ toggleVideo()}} >
+                             <LottieView  ref={play} source={playIcon}   />
+                        </TouchableOpacity>
                        
+                        
                     </View>
+                    <View style={{flex:1}}></View>
+                    </LinearGradient>
                 </View>
             );
         }
@@ -112,7 +149,14 @@ function Current_Stream()
 
 
 
-
+function Header1()
+{
+    return(
+        <View style={{backgroundColor:"black",justifyContent:"center"}}>
+            <Text style={{color:"white",fontSize:30,alignSelf:"center"}}>Select a Video</Text>
+        </View>
+    );
+}
 
 
 
@@ -125,18 +169,20 @@ class App extends Component
             <NavigationContainer>
                 <Tabs.Navigator>
                     <Tabs.Screen name="Home" component={Home}  options={{
-                        tabBarIcon: ({ focused, color, size }) => {
-                            
+                        tabBarIcon: ({ focused }) => {
                             return <LottieView source={require('./assets/animated/Home.json')} autoPlay={focused}/>
-                           
-                            }
+                            },
+                        header:props=><Header1{...props}/>
+                            
                     }}/>
                     <Tabs.Screen name="Currently Streaming" component={Current_Stream} options={{
-                        tabBarIcon: ({ focused, color, size }) => {
+                        tabBarIcon: ({ focused}) => {
                            
-                            return <LottieView source={require('./assets/animated/Stream.json')} autoPlay={focused}/>
+                            return <LottieView  source={require('./assets/animated/Stream.json')} autoPlay={focused}/>
+
+                            },
                             
-                            }
+                        
                     }}/>
                 </Tabs.Navigator>
             </NavigationContainer>
