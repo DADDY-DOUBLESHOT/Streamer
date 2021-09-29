@@ -24,8 +24,11 @@ function Home()
         const video = React.useRef(null);
         const play=React.useRef(null);
         const [playIcon,setPlay]=useState(require('./assets/animated/icons/play1.json'));
-        const [stopped,setStop]=useState(true);
+        const [video_Stopped,setVideoStop]=useState(true);
+        const [stream_Stopped,setStream]=useState(true);
         const [isStream,Stream]=useState(false);
+        const [videoStream]=useState(require('./assets/animated/icons/video_player.json'));
+        const streaming=React.useRef(null);
        
         async function VideoSelector()
         {
@@ -55,13 +58,16 @@ function Home()
         
         }
         
-        function toggleVideo()
+        function toggleVideo1()
         {
-            if(stopped)
+            if(video_Stopped)
             {
                 play.current.play();
                 video.current.playAsync();
-                play.current.play(125,160)
+                setTimeout(() => {
+                    play.current.play(125,160)
+                },3000);
+                
             }
             else
             {
@@ -70,7 +76,26 @@ function Home()
             }
             
             
-            setStop(!stopped);   
+            setVideoStop(!video_Stopped);   
+        }
+        function toggleVideo2()
+        {
+            if(stream_Stopped)
+            {
+                streaming.current.play();
+                let cnt=1
+                setTimeout(() => {
+                    streaming.current.play(125,160)  
+                },2500);
+                
+            }
+            else
+            {
+                streaming.current.reset();
+            }
+            
+            
+            setStream(!stream_Stopped);   
         }
         function Screen1()
         {
@@ -111,11 +136,15 @@ function Home()
                         />
                     </View>
                     <View style={{flex:0.8,backgroundColor:"#1a1a1a",borderRadius:30,display:"flex",flexDirection:"row",justifyContent:"space-around"}}>
-                        <TouchableOpacity style={{flex:1,justifyContent:"space-evenly",flexDirection:"row"}} onPress={()=>{ toggleVideo()}} >
+                        <TouchableOpacity style={{flex:1,justifyContent:"space-evenly",flexDirection:"row"}} onPress={()=>{ toggleVideo1()}} >
                              <LottieView  ref={play} source={playIcon}   />
+                             <Text style={{alignSelf:"flex-end",marginBottom:20,color:"white",fontSize:20}}>{video_Stopped?"Play":"Pause"}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={{flex:1,justifyContent:"space-evenly",flexDirection:"row"}} onPress={()=>{ toggleVideo2()}} >
+                             <LottieView  ref={streaming} source={videoStream}  />
+                             <Text style={{alignSelf:"flex-end",marginBottom:20,color:"white",fontSize:20}}>{stream_Stopped?"Stream Now":"Stop Stream"}</Text>
                         </TouchableOpacity>
                        
-                        
                     </View>
                     <View style={{flex:1}}></View>
                     </LinearGradient>
@@ -175,13 +204,14 @@ class App extends Component
                         header:props=><Header1{...props}/>
                             
                     }}/>
-                    <Tabs.Screen name="Currently Streaming" component={Current_Stream} options={{
+                    <Tabs.Screen name="Currently Streaming"  component={Current_Stream} options={{
+                        
+                           
                         tabBarIcon: ({ focused}) => {
                            
-                            return <LottieView  source={require('./assets/animated/Stream.json')} autoPlay={focused}/>
+                            return <LottieView   source={require('./assets/animated/Stream.json')} autoPlay={focused}/>
 
-                            },
-                            
+                            }  
                         
                     }}/>
                 </Tabs.Navigator>
